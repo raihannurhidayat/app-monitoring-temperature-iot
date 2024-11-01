@@ -40,7 +40,7 @@ const GaugeComponent = ({ value }) => {
             color: "#FFEB3B",
             showTick: true,
             tooltip: {
-              text: "OK temperature!",
+              text: "High temperature!",
             },
           },
           {

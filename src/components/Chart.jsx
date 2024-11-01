@@ -9,6 +9,28 @@ import {
   Legend,
 } from "recharts";
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div
+        className="recharts-tooltip-wrapper"
+        style={{
+          backgroundColor: "#fff",
+          border: "1px solid #ccc",
+          borderRadius: "4px",
+          padding: "10px",
+        }}
+      >
+        <h4 style={{ margin: 0 }}>Detik {label}</h4>{" "}
+        {/* Ubah header sesuai keinginan */}
+        <p style={{ margin: "5px 0" }}>{`Temperature: ${payload[0].value}`}</p>
+      </div>
+    );
+  }
+
+  return null;
+};
+
 export default function Chart({ data }) {
   return (
     <>
@@ -49,8 +71,7 @@ export default function Chart({ data }) {
           }}
           fontSize={12}
         />
-        <Tooltip />
-        <Legend />
+        <Tooltip content={<CustomTooltip />} />
         <Line
           type="monotone"
           dataKey="temperature"
