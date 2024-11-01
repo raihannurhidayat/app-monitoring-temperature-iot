@@ -13,7 +13,7 @@ export default function Chart({ data }) {
   return (
     <>
       <LineChart
-        width={380}
+        width={340}
         height={300}
         data={data}
         margin={{
