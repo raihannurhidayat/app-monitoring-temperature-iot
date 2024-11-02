@@ -3,13 +3,18 @@ import { MdOutlineNotificationsActive } from "react-icons/md";
 
 const NotificationItem = ({ type, time, temperature }) => {
   const data = {
-    message: type === "on" ? "Alat Pendingin Dihidupkan" : type === "off" && "Alat Pendingin Dimatikan",
+    message:
+      type === "on"
+        ? "Alat Pendingin Dihidupkan"
+        : type === "off" && "Alat Pendingin Dimatikan",
     color: type === "on" ? "5BE12C" : type === "off" && "FFEB3B",
   };
 
   return (
     <div
-      className={`border-[2px] border-black rounded-md px-2 py-2 bg-[#${data.color}]`}
+      className={`border-[2px] border-black rounded-md px-2 py-2 bg-[#${
+        data.color
+      }] ${type === "one" ? "bg-[#5BE12C]" : type === "off" && "bg-[#FFEB3B]"}`}
     >
       <div className="flex items-center gap-4">
         <div>
