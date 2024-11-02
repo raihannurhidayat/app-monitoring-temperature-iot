@@ -64,7 +64,7 @@ export default function Chart({ data }) {
         />
         <YAxis
           label={{
-            value: "Suhu",
+            value: "Suhu (C)",
             angle: -90, // Mengatur sudut kemiringan
             position: "", // Posisi label
             style: { textAnchor: "middle", fontSize: 12 },
