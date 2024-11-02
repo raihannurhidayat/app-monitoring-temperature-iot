@@ -56,7 +56,6 @@ const GaugeComponent = ({ value }) => {
         length: 0.8,
         type: "needle",
         width: 15,
-        // elastic: true,
       }}
       labels={{
         valueLabel: { formatTextValue: (value) => value + "ºC" },
@@ -66,11 +65,6 @@ const GaugeComponent = ({ value }) => {
             formatTextValue: (value) => value + "ºC",
             style: { fontSize: 10 },
           },
-          // ticks: [
-          //   { value: 13 },
-          //   { value: 22.5 },
-          //   { value: 32 }
-          // ],
         },
       }}
       value={value}

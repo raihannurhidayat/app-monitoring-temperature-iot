@@ -2,6 +2,8 @@ import GaugeComponent from "./components/Gouge";
 import LayoutAppRoot from "./layouts/layoutApp";
 import Chart from "./components/Chart";
 import { useEffect, useState } from "react";
+import Information from "./components/Information";
+import Notification from "./components/Notification";
 
 export default function App() {
   const [value, setValue] = useState(new Date().getSeconds());
@@ -9,7 +11,12 @@ export default function App() {
     { name: value, uv: 4000, temperature: 20, amt: 2400 },
   ]);
   const [currentTime, setCurrentTime] = useState("");
+  const [highestTemperature, setHighestTemperature] = useState(0);
+  const [lowTemperature, setLowTemperature] = useState(0);
+  const [notificationData, setNotificationData] = useState([]);
+  const [isOn, setIsOn] = useState("mati");
 
+  // use effect untuk clock / jam
   useEffect(() => {
     const interval = setInterval(() => {
       // Mengupdate waktu setiap detik
@@ -20,6 +27,7 @@ export default function App() {
     return () => clearInterval(interval); // Membersihkan interval saat komponen di-unmount
   }, []);
 
+  // useEffect Logic
   useEffect(() => {
     const interval = setInterval(() => {
       const randomValue = Math.floor(Math.random() * 36);
@@ -36,19 +44,69 @@ export default function App() {
         // amt: Math.floor(Math.random() * 2500), // Nilai acak untuk amt
       };
 
+      // meng set data notif ketika suhu lebih dari 30
+      if (randomValue > 30 && isOn === "mati") {
+        setIsOn("hidup");
+  
+        const data = {
+          temperature: randomValue,
+          time: new Date().toLocaleTimeString(),
+          type: "on",
+        };
+
+        setNotificationData((prev) => [data, ...prev]);
+      }
+
+      // meng set data notif ketika alat pendingin mati yaitu dibawah 30 derajat
+      if (randomValue < 28 && isOn === "hidup") {
+        setIsOn("mati");
+
+        const data = {
+          temperature: randomValue,
+          time: new Date().toLocaleTimeString(),
+          type: "off",
+        };
+
+        setNotificationData((prev) => [data, ...prev]);
+      }
+
       // Mengupdate state data dengan menghapus data terlama dan menambahkan data baru
       setData((prevData) => {
         if (prevData.length > 9) {
           const updatedData = [...prevData.slice(1), newData]; // Menghapus data terlama dan menambah data baru
+
+          const currentHighest = Math.max(
+            ...updatedData.map((item) => item.temperature)
+          );
+
+          const currentLow = Math.min(
+            ...updatedData.map((item) => item.temperature)
+          );
+
+          setHighestTemperature(currentHighest);
+          setLowTemperature(currentLow);
+
           return updatedData;
         }
         const updatedData = [...prevData, newData];
+
+        const currentHighest = Math.max(
+          ...updatedData.map((item) => item.temperature)
+        );
+
+        const currentLow = Math.min(
+          ...updatedData.map((item) => item.temperature)
+        );
+
+        setHighestTemperature(currentHighest);
+        setLowTemperature(currentLow);
+
         return updatedData;
       });
     }, 3000);
 
     return () => clearInterval(interval); // Membersihkan interval saat komponen di-unmount
-  }, []);
+  }, [isOn]);
 
   return (
     <LayoutAppRoot>
@@ -66,11 +124,21 @@ export default function App() {
         </div>
       </div>
 
-      {/* Rekap */}
+      {/* informtion */}
       <div>
-    
+        <h1 className="text-xl font-semibold my-4">Information</h1>
+        <div>
+          <Information
+            highestTemperature={highestTemperature}
+            lowTemperature={lowTemperature}
+          />
+        </div>
       </div>
 
+      {/* Nofitication */}
+      <div>
+        <Notification notificationData={notificationData} />
+      </div>
     </LayoutAppRoot>
   );
 }
