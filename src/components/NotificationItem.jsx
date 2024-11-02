@@ -12,9 +12,7 @@ const NotificationItem = ({ type, time, temperature }) => {
 
   return (
     <div
-      className={`border-[2px] border-black rounded-md px-2 py-2 bg-[#${
-        data.color
-      }] ${type === "one" ? "bg-[#5BE12C]" : type === "off" && "bg-[#FFEB3B]"}`}
+      className={`border-[2px] border-black rounded-md px-2 py-2 ${type === "on" ? "bg-[#5BE12C]" : type === "off" && "bg-[#FFEB3B]"}`}
     >
       <div className="flex items-center gap-4">
         <div>
