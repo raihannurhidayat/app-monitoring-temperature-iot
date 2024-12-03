@@ -4,7 +4,7 @@ import Chart from "./components/Chart";
 import { useEffect, useState } from "react";
 import Information from "./components/Information";
 import Notification from "./components/Notification";
-import MqttSubcribe from "./components/MqttSubcribe";
+import MqttComponent from "./components/MqttComponent";
 
 export default function App() {
   const [value, setValue] = useState(new Date().getSeconds());
@@ -143,8 +143,20 @@ export default function App() {
 
       {/* mqtt start */}
       <div>
-        <MqttSubcribe />
+        {/* <MqttSubcribe /> */}
       </div>
+
+      <div>
+      {/* <WebSocketSubscribe /> */}
+      </div>
+
+      <div>
+        <MqttComponent />
+      </div>
+
+      {/* <div>
+        <BylnkComponent />
+      </div> */}
     </LayoutAppRoot>
   );
 }
