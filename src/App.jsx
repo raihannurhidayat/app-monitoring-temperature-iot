@@ -4,76 +4,89 @@ import Chart from "./components/Chart";
 import { useEffect, useState } from "react";
 import Information from "./components/Information";
 import Notification from "./components/Notification";
+import mqtt from "mqtt";
 
 export default function App() {
-  const [value, setValue] = useState(new Date().getSeconds());
-  const [data, setData] = useState([
-    { name: value, uv: 4000, temperature: 20, amt: 2400 },
-  ]);
+  const [value, setValue] = useState(0); // Data suhu
+  const [data, setData] = useState([]);
   const [currentTime, setCurrentTime] = useState("");
   const [highestTemperature, setHighestTemperature] = useState(0);
   const [lowTemperature, setLowTemperature] = useState(0);
   const [notificationData, setNotificationData] = useState([]);
   const [isOn, setIsOn] = useState("mati");
 
-  // use effect untuk clock / jam
+  // MQTT configurations
+  const brokerUrl = "wss://mqtt-dashboard.com:8884/mqtt"; // URL broker MQTT
+  const topicTemperature = "sisdig/24/sensor/suhu"; // Topik untuk data suhu
+
+  // useEffect untuk koneksi MQTT
   useEffect(() => {
-    const interval = setInterval(() => {
-      // Mengupdate waktu setiap detik
-      const now = new Date();
-      setCurrentTime(now.toLocaleTimeString()); // Format waktu
-    }, 1000); // Update setiap detik
+    const mqttClient = mqtt.connect(brokerUrl);
 
-    return () => clearInterval(interval); // Membersihkan interval saat komponen di-unmount
-  }, []);
+    mqttClient.on("connect", () => {
+      console.log("Connected to MQTT broker");
+      mqttClient.subscribe(topicTemperature, (err) => {
+        if (!err) {
+          console.log(`Subscribed to topic: ${topicTemperature}`);
+        } else {
+          console.error("Failed to subscribe:", err);
+        }
+      });
+    });
 
-  // useEffect Logic
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const randomValue = Math.floor(Math.random() * 36);
-      setValue(randomValue); // Mengubah nilai temperatur
+    mqttClient.on("message", (topic, message) => {
+      if (topic === topicTemperature) {
+        const temperature = parseFloat(message.toString());
+        setValue(temperature); // Mengupdate suhu dari MQTT
 
-      const now = new Date();
-      const seconds = now.getSeconds();
+        const now = new Date();
+        const seconds = now.getSeconds();
 
-      const newData = {
-        name: seconds.toString(), // Menggunakan panjang array sebagai nama
-        temperature: randomValue, // Nilai acak suhu antara 0-50
-
-        // uv: Math.floor(Math.random() * 4000), // Nilai acak untuk uv
-        // amt: Math.floor(Math.random() * 2500), // Nilai acak untuk amt
-      };
-
-      // meng set data notif ketika suhu lebih dari 30
-      if (randomValue > 30 && isOn === "mati") {
-        setIsOn("hidup");
-  
-        const data = {
-          temperature: randomValue,
-          time: new Date().toLocaleTimeString(),
-          type: "on",
+        const newData = {
+          name: seconds.toString(),
+          temperature: temperature,
         };
 
-        setNotificationData((prev) => [data, ...prev]);
-      }
+        // Menangani notifikasi
+        if (temperature > 30 && isOn === "mati") {
+          setIsOn("hidup");
+          const data = {
+            temperature: temperature,
+            time: now.toLocaleTimeString(),
+            type: "on",
+          };
+          setNotificationData((prev) => [data, ...prev]);
+        }
 
-      // meng set data notif ketika alat pendingin mati yaitu dibawah 30 derajat
-      if (randomValue < 28 && isOn === "hidup") {
-        setIsOn("mati");
+        if (temperature < 28 && isOn === "hidup") {
+          setIsOn("mati");
+          const data = {
+            temperature: temperature,
+            time: now.toLocaleTimeString(),
+            type: "off",
+          };
+          setNotificationData((prev) => [data, ...prev]);
+        }
 
-        const data = {
-          temperature: randomValue,
-          time: new Date().toLocaleTimeString(),
-          type: "off",
-        };
+        // Mengupdate data untuk grafik
+        setData((prevData) => {
+          if (prevData.length > 9) {
+            const updatedData = [...prevData.slice(1), newData];
 
-        setNotificationData((prev) => [data, ...prev]);
-      }
+            const currentHighest = Math.max(
+              ...updatedData.map((item) => item.temperature)
+            );
 
-      // Mengupdate state data dengan menghapus data terlama dan menambahkan data baru
-      setData((prevData) => {
-        if (prevData.length > 9) {
-          const updatedData = [...prevData.slice(1), newData]; // Menghapus data terlama dan menambah data baru
+            const currentLow = Math.min(
+              ...updatedData.map((item) => item.temperature)
+            );
+
+            setHighestTemperature(currentHighest);
+            setLowTemperature(currentLow);
+
+            return updatedData;
+          }
+          const updatedData = [...prevData, newData];
 
           const currentHighest = Math.max(
             ...updatedData.map((item) => item.temperature)
@@ -87,26 +100,33 @@ export default function App() {
           setLowTemperature(currentLow);
 
           return updatedData;
-        }
-        const updatedData = [...prevData, newData];
+        });
+      }
+    });
 
-        const currentHighest = Math.max(
-          ...updatedData.map((item) => item.temperature)
-        );
+    mqttClient.on("error", (err) => {
+      console.error("MQTT connection error:", err);
+    });
 
-        const currentLow = Math.min(
-          ...updatedData.map((item) => item.temperature)
-        );
+    mqttClient.on("close", () => {
+      console.log("Disconnected from MQTT broker");
+    });
 
-        setHighestTemperature(currentHighest);
-        setLowTemperature(currentLow);
+    // Cleanup saat komponen di-unmount
+    return () => {
+      mqttClient.end();
+    };
+  }, [brokerUrl, topicTemperature, isOn]);
 
-        return updatedData;
-      });
-    }, 3000);
+  // useEffect untuk clock / jam
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString());
+    }, 1000);
 
-    return () => clearInterval(interval); // Membersihkan interval saat komponen di-unmount
-  }, [isOn]);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <LayoutAppRoot>
@@ -123,8 +143,7 @@ export default function App() {
           <Chart data={data} />
         </div>
       </div>
-
-      {/* informtion */}
+      {/* Information */}
       <div>
         <h1 className="text-xl font-semibold my-4">Information</h1>
         <div>
@@ -134,8 +153,7 @@ export default function App() {
           />
         </div>
       </div>
-
-      {/* Nofitication */}
+      {/* Notification */}
       <div>
         <Notification notificationData={notificationData} />
       </div>
