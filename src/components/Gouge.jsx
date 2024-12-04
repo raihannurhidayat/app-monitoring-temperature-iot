@@ -69,7 +69,7 @@ const GaugeComponent = ({ value }) => {
       }}
       value={value}
       minValue={0}
-      maxValue={35}
+      maxValue={80}
     />
   );
 };
