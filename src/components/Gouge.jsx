@@ -36,7 +36,7 @@ const GaugeComponent = ({ value }) => {
             },
           },
           {
-            limit: 30,
+            limit: 45,
             color: "#FFEB3B",
             showTick: true,
             tooltip: {
@@ -69,7 +69,7 @@ const GaugeComponent = ({ value }) => {
       }}
       value={value}
       minValue={0}
-      maxValue={80}
+      maxValue={60}
     />
   );
 };
