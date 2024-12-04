@@ -48,7 +48,7 @@ export default function App() {
         };
 
         // Menangani notifikasi
-        if (temperature > 30 && isOn === "mati") {
+        if (temperature > 35 && isOn === "mati") {
           setIsOn("hidup");
           const data = {
             temperature: temperature,
@@ -58,7 +58,7 @@ export default function App() {
           setNotificationData((prev) => [data, ...prev]);
         }
 
-        if (temperature < 28 && isOn === "hidup") {
+        if (temperature <= 35 && isOn === "hidup") {
           setIsOn("mati");
           const data = {
             temperature: temperature,
